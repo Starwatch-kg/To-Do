@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>To-Do List</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; }
+        .task-item { border-bottom: 1px solid #eee; padding: 10px 0; display: flex; justify-content: space-between; align-items: center; }
+        .done { text-decoration: line-through; color: gray; }
+        form { margin-bottom: 20px; display: flex; gap: 10px; }
+        input { flex-grow: 1; padding: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Мои задачи</h1>
+
+    <form action="/add_task_form" method="post">
+        <input type="text" name="task" placeholder="Напиши новую задачу..." required>
+        <button type="submit">Добавить</button>
+    </form>
+
+    <div id="task-list">
+        {% for t in tasks %}
+        <div class="task-item">
+            <span class="{{ 'done' if t.status else '' }}">
+                {{ t.task }}
+            </span>
+
+            <div style="display: flex; gap: 5px;">
+                <form action="/update_status_form" method="post">
+                    <input type="hidden" name="task_id" value="{{ t.task_id }}">
+                    {% if t.status %}
+                        <input type="hidden" name="new_status" value="False">
+                        <button type="submit">↩️ Вернуть</button>
+                    {% else %}
+                        <input type="hidden" name="new_status" value="True">
+                        <button type="submit">✅ Сделано</button>
+                    {% endif %}
+                </form>
+
+                <form action="/delete_task_form" method="post">
+                    <input type="hidden" name="task_id" value="{{ t.task_id }}">
+                    <button type="submit">❌ Удалить</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html> 
