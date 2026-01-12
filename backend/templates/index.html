@@ -2,49 +2,192 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>To-Do List</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мои задачи</title>
     <style>
-        body { font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; }
-        .task-item { border-bottom: 1px solid #eee; padding: 10px 0; display: flex; justify-content: space-between; align-items: center; }
-        .done { text-decoration: line-through; color: gray; }
-        form { margin-bottom: 20px; display: flex; gap: 10px; }
-        input { flex-grow: 1; padding: 5px; }
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: #eef2f3;
+            display: flex;
+            justify-content: center; 
+            align-items: center;     
+            min-height: 100vh;       
+            margin: 0;
+            color: #333;
+        }
+
+        .container {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 450px;
+            text-align: center; 
+        }
+
+        .header {
+            margin-bottom: 2rem;
+            display: flex;
+            flex-direction: column; 
+            align-items: center;    
+            gap: 10px;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin: 0;
+            color: #2c3e50;
+        }
+
+        .logout-btn {
+            background: none;
+            border: 1px solid #ff6b6b;
+            color: #ff6b6b;
+            padding: 6px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .add-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 2rem;
+        }
+
+        input[type="text"] {
+            flex-grow: 1;
+            padding: 12px 15px;
+            border: 2px solid #eee;
+            border-radius: 12px;
+            font-size: 1rem;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        input[type="text"]:focus {
+            border-color: #4facfe;
+        }
+
+        .add-btn {
+            background: #4facfe;
+            border: none;
+            color: white;
+            padding: 0 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.5rem;
+            line-height: 1;
+        }
+
+        .add-btn:hover { background: #00f2fe; }
+
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            text-align: left; 
+        }
+
+        .task-item {
+            background: #f9f9f9;
+            padding: 12px 15px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .task-text {
+            font-weight: 500;
+            word-break: break-all; 
+        }
+
+        .task-text.done {
+            text-decoration: line-through;
+            color: #bbb;
+        }
+
+        .actions {
+            display: flex;
+            gap: 5px;
+            margin-left: 10px;
+        }
+
+        .btn {
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            transition: 0.2s;
+        }
+
+        .btn:hover { transform: scale(1.1); }
+        .btn-done { background: #d4edda; color: #155724; }
+        .btn-undo { background: #fff3cd; color: #856404; }
+        .btn-del  { background: #f8d7da; color: #721c24; }
+
     </style>
 </head>
 <body>
-    <h1>Мои задачи</h1>
 
-    <form action="/add_task_form" method="post">
-        <input type="text" name="task" placeholder="Напиши новую задачу..." required>
-        <button type="submit">Добавить</button>
-    </form>
-
-    <div id="task-list">
-        {% for t in tasks %}
-        <div class="task-item">
-            <span class="{{ 'done' if t.status else '' }}">
-                {{ t.task }}
-            </span>
-
-            <div style="display: flex; gap: 5px;">
-                <form action="/update_status_form" method="post">
-                    <input type="hidden" name="task_id" value="{{ t.task_id }}">
-                    {% if t.status %}
-                        <input type="hidden" name="new_status" value="False">
-                        <button type="submit">↩️ Вернуть</button>
-                    {% else %}
-                        <input type="hidden" name="new_status" value="True">
-                        <button type="submit">✅ Сделано</button>
-                    {% endif %}
-                </form>
-
-                <form action="/delete_task_form" method="post">
-                    <input type="hidden" name="task_id" value="{{ t.task_id }}">
-                    <button type="submit">❌ Удалить</button>
-                </form>
-            </div>
+    <div class="container">
+        <div class="header">
+            <h1>Привет, {{ user }}! 👋</h1>
+            <form action="/logout" method="post">
+                <button type="submit" class="logout-btn">Выйти</button>
+            </form>
         </div>
-        {% endfor %}
+
+        <form action="/add_task_form" method="post" class="add-form">
+            <input type="text" name="task" placeholder="Новая задача..." required autocomplete="off">
+            <button type="submit" class="add-btn">+</button>
+        </form>
+
+        <div class="task-list">
+            {% for t in tasks %}
+            <div class="task-item">
+                <span class="task-text {{ 'done' if t.status else '' }}">
+                    {{ t.task }}
+                </span>
+
+                <div class="actions">
+                    <form action="/update_status_form" method="post">
+                        <input type="hidden" name="task_id" value="{{ t.task_id }}">
+                        {% if t.status %}
+                            <input type="hidden" name="new_status" value="False">
+                            <button type="submit" class="btn btn-undo" title="Вернуть">↩️</button>
+                        {% else %}
+                            <input type="hidden" name="new_status" value="True">
+                            <button type="submit" class="btn btn-done" title="Сделано">✅</button>
+                        {% endif %}
+                    </form>
+
+                    <form action="/delete_task_form" method="post">
+                        <input type="hidden" name="task_id" value="{{ t.task_id }}">
+                        <button type="submit" class="btn btn-del" title="Удалить">🗑️</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+            
+            {% if not tasks %}
+                <p style="text-align: center; color: #aaa;">Задач пока нет ✨</p>
+            {% endif %}
+        </div>
     </div>
+
 </body>
-</html> 
+</html>

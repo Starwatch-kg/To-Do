@@ -13,25 +13,29 @@ def main(request: Request):
     if user is None:
         return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
     else:
-        my_tasks = get_user_tasks(user)      
-        return templates.TemplateResponse("index.html", {"request": request, "tasks": my_tasks})
+        my_tasks = get_user_tasks(user)
+        return templates.TemplateResponse("index.html", {
+            "request": request, 
+            "tasks": my_tasks, 
+            "user": user
+        })
 
 @app.post("/add_task_form")
-def add_task_form(request: Request, task: str = Form(...)):
+def add_task_form(request: Request, task: str = Form()):
     user = request.cookies.get("user_login")   
     if user:
         add_task(user, task)     
     return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
 
 @app.post("/delete_task_form")
-def delete_task_form(request: Request, task_id: int = Form(...)):
+def delete_task_form(request: Request, task_id: int = Form()):
     user = request.cookies.get("user_login")
     if user:
         delete_task(task_id, user)
     return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
 
 @app.post("/update_status_form")
-def update_status_form(request: Request, task_id: int = Form(...), new_status: bool = Form(...)):
+def update_status_form(request: Request, task_id: int = Form(), new_status: bool = Form()):
     user = request.cookies.get("user_login") 
     if user:
         update_task_status(task_id, user, new_status)  
@@ -41,6 +45,12 @@ def update_status_form(request: Request, task_id: int = Form(...), new_status: b
 def register_new_user(request: Request, login: str=Form(), password: str=Form()):
     create_user(login, password)
     return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
+
+@app.post("/logout")
+def logout_user():
+    response = RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
+    response.delete_cookie(key="user_login")
+    return response
 
 @app.get("/register_page", response_class=HTMLResponse)
 def register_page(request: Request):
