@@ -52,7 +52,7 @@ def logout_user():
     response.delete_cookie(key="user_login")
     return response
 
-@app.get("/register_page", response_class=HTMLResponse)
+@app.get("/register", response_class=HTMLResponse)
 def register_page(request: Request):
     return templates.TemplateResponse("register.html", {"request": request})
 
@@ -68,7 +68,7 @@ def user_login(request: Request, login: str=Form(), password: str=Form()):
         response.set_cookie(key="user_login", value=login)
         return response
     else:
-        return RedirectResponse("login.html", status_code=status.HTTP_303_SEE_OTHER)
+        return RedirectResponse("login", status_code=status.HTTP_303_SEE_OTHER)
 
 @app.get("/tasks")
 def user_tasks(user_id: str):
