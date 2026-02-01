@@ -1,9 +1,11 @@
 from fastapi import FastAPI, Request, Form, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from services import add_task, get_user_tasks, delete_task, create_user, login_user, update_task_status
-from storage import read_json, write_json, TASKS_FILE, USERS_FILE
+from services import add_task, get_user_tasks, delete_task, register_new_user, login_user, update_task_status
+import models
+from db import engine
 
+models.Base.metadata.create_all(bind=engine)
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
@@ -38,12 +40,12 @@ def delete_task_form(request: Request, task_id: int = Form()):
 def update_status_form(request: Request, task_id: int = Form(), new_status: bool = Form()):
     user = request.cookies.get("user_login") 
     if user:
-        update_task_status(task_id, user, new_status)  
+        update_task_status(task_id, new_status)  
     return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
 
 @app.post("/register_user")
-def register_new_user(request: Request, login: str=Form(), password: str=Form()):
-    create_user(login, password)
+def register_new_user_endpoint(request: Request, login: str=Form(), password: str=Form()):
+    register_new_user(login, password)
     return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
 
 @app.post("/logout")
@@ -77,7 +79,7 @@ def user_tasks(user_id: str):
 
 @app.post("/register")
 def register(login: str, password: str):
-    user = create_user(login, password)
+    user = register_new_user(login, password)
     return user
 
 @app.post("/add_task")
@@ -86,8 +88,8 @@ def add_new_task(user_id: str, task: str):
     return task
 
 @app.post("/set_done")
-def set_done_task(task_id: int, user_id: str, new_status: bool):
-    status = update_task_status(task_id, user_id, new_status)
+def set_done_task(task_id: int, new_status: bool):
+    status = update_task_status(task_id, new_status)
     return status
 
 @app.delete("/delete_task")

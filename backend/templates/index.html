@@ -159,14 +159,15 @@
         <div class="task-list">
             {% for t in tasks %}
             <div class="task-item">
-                <span class="task-text {{ 'done' if t.status else '' }}">
-                    {{ t.task }}
+                <span class="task-text {{ 'done' if t.is_done else '' }}">
+                    {{ t.content }}
                 </span>
 
                 <div class="actions">
                     <form action="/update_status_form" method="post">
-                        <input type="hidden" name="task_id" value="{{ t.task_id }}">
-                        {% if t.status %}
+                        <input type="hidden" name="task_id" value="{{ t.id }}">
+                        
+                        {% if t.is_done %}
                             <input type="hidden" name="new_status" value="False">
                             <button type="submit" class="btn btn-undo" title="Вернуть">↩️</button>
                         {% else %}
@@ -176,7 +177,7 @@
                     </form>
 
                     <form action="/delete_task_form" method="post">
-                        <input type="hidden" name="task_id" value="{{ t.task_id }}">
+                        <input type="hidden" name="task_id" value="{{ t.id }}">
                         <button type="submit" class="btn btn-del" title="Удалить">🗑️</button>
                     </form>
                 </div>
@@ -188,6 +189,5 @@
             {% endif %}
         </div>
     </div>
-
 </body>
 </html>

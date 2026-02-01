@@ -1,46 +1,77 @@
-from storage import read_json, write_json, USERS_FILE, TASKS_FILE
+from db import SessionLocal
+from models import Users, Tasks
 
-def create_user(login, password):
-    users = read_json(USERS_FILE)
-    for user_login in users:
-        if user_login['login'] == login:
-            return "login already exists"       
-    new_id = max([u['id'] for u in users], default=0) + 1
-    new_user = {"id": new_id, "login": login, "password": password}   
-    users.append(new_user)    
-    write_json(USERS_FILE, users)
-    return True
+def register_new_user(login, password):
+    try:
+        db = SessionLocal()
+        existing_user = db.query(Users).filter(Users.login == login).first()
+        if existing_user != None:
+            return False
+        new_user = Users(login=login, password=password)
+        db.add(new_user)
+        db.commit()
+        return True
+    finally:
+        db.close()
+  
+def add_task(user_login, task_text):
+   db = SessionLocal()
+   try:
+       owner = db.query(Users).filter(Users.login == user_login).first()
+       if owner != None:
+           new_task = Tasks(content=task_text, owner_id=owner.id)
+           db.add(new_task)
+           db.commit() 
+           return True
+       return False 
+   finally:
+       db.close()
 
-def add_task(user_id, task):
-    users_task = read_json(TASKS_FILE)
-    task_id = max([u['task_id'] for u in users_task], default=0) + 1
-    task = {'user_id': user_id, 'task_id': task_id, 'task':task, 'status':False}
-    users_task.append(task)
-    write_json(TASKS_FILE, users_task)
-    return True
+def get_user_tasks(user_login):
+    db = SessionLocal()
+    try:
+        user = db.query(Users).filter(Users.login == user_login).first()
+        if user != None:
+            task = db.query(Tasks).filter(Tasks.owner_id == user.id).all()
+            return task
+        return []
+    finally:
+        db.close()
+    
+def update_task_status(task_id, new_status):
+    db = SessionLocal()
+    try:
+        task = db.query(Tasks).filter(Tasks.id == task_id).first()
+        if task != None:
+            task.is_done = new_status
+            db.commit()
+            return True
+        return False
+    finally:
+        db.close()
 
-def get_user_tasks(user_id):
-    all_tasks = read_json(TASKS_FILE)
-    my_tasks = [t for t in all_tasks if t['user_id'] == user_id]
-    return my_tasks
-
-def update_task_status(task_id, user_id, new_status):
-    all_tasks = read_json(TASKS_FILE)
-    for id_task in all_tasks:
-        if id_task['task_id'] == task_id and id_task['user_id'] == user_id:
-            id_task['status'] = new_status
-            break
-    write_json(TASKS_FILE, all_tasks)
-
-def delete_task(task_id, user_id):
-    all_task = read_json(TASKS_FILE)
-    new_task = [t for t in all_task if (not (t['task_id'] == task_id and t['user_id'] == user_id))]
-    write_json(TASKS_FILE, new_task)
+def delete_task(task_id, user_login):
+    db = SessionLocal()
+    try:
+        task = db.query(Tasks).filter(Tasks.id == task_id).first()
+        if task != None:
+            db.delete(task)
+            db.commit()
+            return True
+        return False
+    finally:
+        db.close()
+    
 
 def login_user(login, password):
-    users = read_json(USERS_FILE)
-    for user in users:
-        if user['login'] == login:
-            if user['password'] == password:
-                return True 
-    return False    
+    db = SessionLocal()
+    try:
+        user = db.query(Users).filter(Users.login == login).first()
+        if user != None and user.password == password:
+            return True
+        return False
+    finally:
+        db.close()
+
+
+
