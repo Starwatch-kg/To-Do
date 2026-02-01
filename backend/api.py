@@ -1,12 +1,15 @@
 from fastapi import FastAPI, Request, Form, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 from services import add_task, get_user_tasks, delete_task, register_new_user, login_user, update_task_status
 import models
 from db import engine
 
 models.Base.metadata.create_all(bind=engine)
 app = FastAPI()
+templates = Jinja2Templates(directory="templates")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 @app.get("/", response_class=HTMLResponse)

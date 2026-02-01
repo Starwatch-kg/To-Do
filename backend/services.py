@@ -53,15 +53,19 @@ def update_task_status(task_id, new_status):
 def delete_task(task_id, user_login):
     db = SessionLocal()
     try:
-        task = db.query(Tasks).filter(Tasks.id == task_id).first()
-        if task != None:
-            db.delete(task)
-            db.commit()
-            return True
+        user = db.query(Users).filter(Users.login == user_login).first()
+        if user != None:
+            task = db.query(Tasks).filter(
+                Tasks.id == task_id, 
+                Tasks.owner_id == user.id  
+            ).first()
+            if task != None:
+                db.delete(task)
+                db.commit()
+                return True   
         return False
     finally:
         db.close()
-    
 
 def login_user(login, password):
     db = SessionLocal()
@@ -72,6 +76,4 @@ def login_user(login, password):
         return False
     finally:
         db.close()
-
-
 
