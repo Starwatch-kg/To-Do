@@ -1,29 +1,39 @@
+# --- Виртуальное окружение ---
 venv/
 .venv/
+env/
+
+# --- Базы данных ---
+*.db
+*.sqlite3
+*.sqlite
+
+# --- Python кэш и компилированные файлы ---
 __pycache__/
 *.py[cod]
 *$py.class
 
+# --- Ключи и настройки окружения ---
+.env
+.env.local
+
+# --- Настройки редактора ---
+.vscode/
+.idea/
+
+# --- Системные файлы  ---
+.DS_Store
+Thumbs.db
+
+# --- Логи и отчеты об ошибках ---
+pip-log.txt
+*.log
+
+# --- Прочее ---
 build/
 dist/
 *.egg-info/
-pip-wheel-metadata/
-
-pip-log.txt
-.pytest_cache/
-.coverage
-htmlcov/
-instance/
-*.db
-*.sqlite3
-*.env
-env/
-.vscode/
-.idea/
-*.swp
-.DS_Store
 .mypy_cache/
 .cache/
-.ropeproject/
-static/uploads/
-*.so
+.coverage
+htmlcov/
